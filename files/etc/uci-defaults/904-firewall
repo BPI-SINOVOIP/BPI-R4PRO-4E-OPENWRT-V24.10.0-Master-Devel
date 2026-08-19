@@ -1,0 +1,44 @@
+#!/bin/sh
+set -x
+exec >> /root/uci-defaults.log 2>&1
+
+# Enable:
+# Routing/NAT Offloading (Not fully compatible with QoS/SQM.)
+# Flow offloading type: Hardware flow offloading
+uci set firewall.cfg01e63d.flow_offloading='1'
+uci set firewall.cfg01e63d.flow_offloading_hw='1'
+uci commit firewall
+
+uci add firewall rule # =cfg0f92bd
+uci set firewall.@rule[-1].src='wan'
+# uci set firewall.@rule[-1].dest='lan'
+uci set firewall.@rule[-1].name='Reject-WAN-SSH-Dropbear'
+uci set firewall.@rule[-1].dest_port='2222'
+uci set firewall.@rule[-1].target='REJECT'
+uci commit firewall
+
+uci add firewall rule # =cfg1092bd
+uci set firewall.@rule[-1].src='wan'
+# uci set firewall.@rule[-1].dest='lan'
+uci set firewall.@rule[-1].name='Reject-WAN-SSH-OpenSSH'
+uci set firewall.@rule[-1].dest_port='22'
+uci set firewall.@rule[-1].target='REJECT'
+uci commit firewall
+
+uci add firewall rule # =cfg1092bd
+uci set firewall.@rule[-1].src='wan'
+# uci set firewall.@rule[-1].dest='lan'
+uci set firewall.@rule[-1].name='Reject-WAN-HTTP'
+uci set firewall.@rule[-1].dest_port='80'
+uci set firewall.@rule[-1].target='REJECT'
+uci commit firewall
+
+uci add firewall rule # =cfg1092bd
+uci set firewall.@rule[-1].src='wan'
+# uci set firewall.@rule[-1].dest='lan'
+uci set firewall.@rule[-1].name='Reject-WAN-HTTPS'
+uci set firewall.@rule[-1].dest_port='443'
+uci set firewall.@rule[-1].target='REJECT'
+uci commit firewall
+
+exit 0

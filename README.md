@@ -13,6 +13,10 @@ full customization, to use the device in ways never envisioned.
 
 Sunshine!
 
+## Build
+
+For instructions on how to generate a flashable image, see [`./BUILD.md`](./BUILD.md).
+
 ## Download
 
 Built firmware images are available for many architectures and come with a

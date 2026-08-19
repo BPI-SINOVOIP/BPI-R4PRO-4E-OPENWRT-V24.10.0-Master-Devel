@@ -1,0 +1,23 @@
+#!/bin/sh
+set -x
+exec >> /root/uci-defaults.log 2>&1
+
+mkdir -pv /root/.ssh
+mkdir -pv /etc/dropbear
+
+tee /root/.ssh/authorized_keys /etc/dropbear/authorized_keys >/dev/null <<'EOF'
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICDGRM+2Fne1yndOyeDWjRwlC2fuyISc3iQSQMRorN61 Mohamed Bana <mohamed.omar.bana@gmail.com>
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ0/4ug9qhgTD7zv8iGf1zcpHhrGG8fnkgTARINg5zUn Mohamed Bana (mohamed@bana.io)
+sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIIeIsv2ZKjE9K+QnU4zDN0BiGcodgHahdc5ihyds9j1uAAAABHNzaDo= mohamed.omar.bana@gmail.com
+EOF
+
+chmod 600 /root/.ssh/authorized_keys /etc/dropbear/authorized_keys
+
+# uci set dropbear.@dropbear[0].PasswordAuth="off"
+# uci set dropbear.@dropbear[0].RootPasswordAuth="off"
+uci set dropbear.@dropbear[0].Port="2222"
+uci commit dropbear
+
+sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+exit 0

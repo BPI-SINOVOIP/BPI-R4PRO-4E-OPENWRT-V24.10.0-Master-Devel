@@ -1,0 +1,175 @@
+From 230b14120cd4a35f4aaabf058bd44e82f2050fa4 Mon Sep 17 00:00:00 2001
+From: Mohamed Bana <mohamed.omar.bana@gmail.com>
+Date: Mon, 10 Aug 2026 12:57:53 +0100
+Subject: [PATCH] netfilter: add nf_conntrack_{qos,tcp_no_window_check} to
+ sysctl table
+
+Without this patch networking, at the least, within the newly created
+namespace is broken. One encounteres the following stackes when starting
+a container:
+
+```
+[ 2216.613551] ------------[ cut here ]------------
+[ 2216.618181] sysctl net/netfilter/nf_conntrack_qos: data points to kernel global data: 0xffffffc08157a04c
+[ 2216.627755] WARNING: CPU: 1 PID: 3068 at register_net_sysctl_sz+0x1a4/0x1e8
+[ 2216.634726] Modules linked in: qcserial pppoe ppp_async option l2tp_ppp cdc_mbim wireguard usb_wwan qmi_wwan pptp pppox ppp_mppe ppp_generic nft_fib_inet nf_flow_table_inet mt7996e(O) mt76_connac_lib(O) mt76(O) mac
+80211(O) libchacha20poly1305 ipt_REJECT chacha_neon ch341 cfg80211(O) cdc_ncm cdc_ether cdc_eem xt_time xt_tcpudp xt_tcpmss xt_statistic xt_state xt_recent xt_quota xt_pkttype xt_physdev xt_owner xt_nat xt_multiport x
+t_mark xt_mac xt_limit xt_length xt_hl xt_helper xt_ecn xt_dscp xt_conntrack xt_connmark xt_connlimit xt_connbytes xt_comment xt_cgroup xt_addrtype xt_TPROXY xt_TCPMSS xt_REDIRECT xt_MASQUERADE xt_LOG xt_HL xt_FLOWOFF
+LOAD xt_DSCP xt_CLASSIFY usbserial usbnet ums_usbat ums_sddr55 ums_sddr09 ums_karma ums_jumpshot ums_isd200 ums_freecom ums_datafab ums_cypress ums_alauda spidev slhc sfp sch_cake rtc_pcf8563 poly1305_neon nft_tproxy
+nft_socket nft_reject_ipv6 nft_reject_ipv4 nft_reject_inet nft_reject_bridge nft_reject nft_redir nft_quota nft_numgen nft_nat nft_meta_bridge nft_masq nft_log
+[ 2216.634895]  nft_limit nft_hash nft_fwd_netdev nft_flow_offload nft_fib_ipv6 nft_fib_ipv4 nft_fib nft_dup_netdev nft_ct nft_compat nft_chain_nat nf_tproxy_ipv6 nf_tproxy_ipv4 nf_tables nf_socket_ipv6 nf_socket_ipv4
+ nf_reject_ipv4 nf_log_syslog nf_flow_table_netlink nf_dup_netdev nf_conntrack_netlink nf_conntrack_bridge nf_conncount mdio_i2c macvlan libcurve25519_generic libchacha iptable_nat iptable_mangle iptable_filter ipt_EC
+N ip_tables ina2xx compat(O) cdc_wdm cdc_acm br_netfilter at24 arptable_filter arpt_mangle arp_tables crypto_safexcel fuse ntfs3 cls_bpf act_bpf act_connmark sch_tbf sch_ingress sch_htb sch_hfsc em_u32 cls_u32 cls_rou
+te cls_matchall cls_fw cls_flow cls_basic act_skbedit act_mirred act_gact sg pwm_fan i2c_gpio i2c_algo_bit gpio_pcf857x gpio_pca953x i2c_mux_pca954x i2c_mux_pca9541 i2c_mux_gpio i2c_mux ledtrig_usbport xt_set ip_set_l
+ist_set ip_set_hash_netportnet ip_set_hash_netport ip_set_hash_netnet ip_set_hash_netiface ip_set_hash_net ip_set_hash_mac ip_set_hash_ipportnet ip_set_hash_ipportip
+[ 2216.724305]  ip_set_hash_ipport ip_set_hash_ipmark ip_set_hash_ipmac ip_set_hash_ip ip_set_bitmap_port ip_set_bitmap_ipmac ip_set_bitmap_ip ip_set nfnetlink ip6table_nat nf_nat ip6t_NPT ip6table_mangle ip6table_fil
+ter ip6_tables ip6t_REJECT x_tables nf_reject_ipv6 nls_ucs2_utils cifs_arc4 asn1_decoder ip_gre gre ifb l2tp_netlink l2tp_core oid_registry netlink_diag ip_tunnel veth tun snd_rawmidi snd_seq_device snd_pcm_oss snd_mi
+xer_oss snd_hwdep snd_compress snd_pcm snd_timer snd soundcore ntfs autofs4 nls_utf8 nls_iso8859_1 nls_cp437 marvell10g marvell vxlan udp_tunnel ip6_udp_tunnel crypto_user algif_skcipher algif_rng algif_hash algif_aea
+d af_alg sha512_arm64 sha1_ce cts arc4 uas usb_storage pf_ring(O) uleds leds_gpio xhci_plat_hcd xhci_pci xhci_mtk_hcd xhci_hcd nvme nvme_core gpio_button_hotplug(O) vfat fat exfat usbcore usb_common aeon_as21xxx(O) aq
+uantia an8801 mii [last unloaded: ksmbd]
+[ 2216.893182] CPU: 1 PID: 3068 Comm: runc:[1:CHILD] Tainted: G           O       6.6.93 #0
+[ 2216.901262] Hardware name: Bananapi BPI-R4-PRO-4E (DT)
+[ 2216.906391] pstate: 60400005 (nZCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[ 2216.913342] pc : register_net_sysctl_sz+0x1a4/0x1e8
+[ 2216.918222] lr : register_net_sysctl_sz+0x1a4/0x1e8
+[ 2216.923092] sp : ffffffc087cbbbd0
+[ 2216.926395] x29: ffffffc087cbbbd0 x28: ffffffc08157a04c x27: ffffffc081516e10
+[ 2216.933523] x26: ffffffc081516dd8 x25: ffffffc080e42858 x24: ffffff80d7608e80
+[ 2216.940647] x23: ffffffc080e35458 x22: ffffff80c6ffc800 x21: 0000000000000007
+[ 2216.947772] x20: 0000000000000020 x19: ffffff80c6ffc9c0 x18: 00000000000006c4
+[ 2216.954897] x17: 6f6c67206c656e72 x16: 656b206f74207374 x15: ffffffc08136cd68
+[ 2216.962022] x14: 000000000000144c x13: 00000000000006c4 x12: 00000000ffffffea
+[ 2216.969147] x11: 00000000ffffefff x10: ffffffc0813c4d68 x9 : ffffffc08136cba0
+[ 2216.976271] x8 : 0000000000017fe8 x7 : c0000000ffffefff x6 : 0000000000000001
+[ 2216.983395] x5 : 0000000000000000 x4 : 0000000000000000 x3 : 0000000000000000
+[ 2216.990519] x2 : ffffff80ff7646b0 x1 : ffffffc07e42e000 x0 : 000000000000005c
+[ 2216.997644] Call trace:
+[ 2217.000081]  register_net_sysctl_sz+0x1a4/0x1e8
+[ 2217.004603]  nf_conntrack_pernet_init+0x154/0x2c8
+[ 2217.009301]  ops_init+0x3c/0x13c
+[ 2217.012523]  setup_net+0x110/0x318
+[ 2217.015916]  copy_net_ns+0xc8/0x228
+[ 2217.019396]  create_new_namespaces+0x110/0x2ac
+[ 2217.023835]  unshare_nsproxy_namespaces+0x5c/0xa0
+[ 2217.028530]  ksys_unshare+0x110/0x31c
+[ 2217.032186]  __arm64_sys_unshare+0x10/0x1c
+[ 2217.036272]  invoke_syscall.constprop.0+0x4c/0xe0
+[ 2217.040968]  do_el0_svc+0x3c/0xbc
+[ 2217.044272]  el0_svc+0x18/0x4c
+[ 2217.047320]  el0t_64_sync_handler+0x118/0x124
+[ 2217.051668]  el0t_64_sync+0x150/0x154
+[ 2217.055321] ---[ end trace 0000000000000000 ]---
+```
+
+```
+[155077.739291] ------------[ cut here ]------------
+[155077.744244] sysctl net/netfilter/nf_conntrack_tcp_no_window_check: data points to kernel global data: 0xffffffc081351300
+[155077.755420] WARNING: CPU: 0 PID: 31795 at register_net_sysctl_sz+0x1a4/0x1e8
+[155077.762557] Modules linked in: nf_nat_amanda nf_conntrack_amanda qcserial pppoe ppp_async option l2tp_ppp cdc_mbim wireguard usb_wwan qmi_wwan pptp pppox ppp_mppe ppp_generic nft_fib_inet nf_flow_table_inet mt7996
+e(O) mt76_connac_lib(O) mt76(O) mac80211(O) libchacha20poly1305 ipt_REJECT ebtable_nat ebtable_filter ebtable_broute chacha_neon ch341 cfg80211(O) cdc_ncm cdc_ether cdc_eem xt_u32 xt_time xt_tcpudp xt_tcpmss xt_string
+ xt_statistic xt_state xt_socket xt_recent xt_quota2(O) xt_quota xt_psd(O) xt_policy xt_pkttype xt_physdev xt_owner xt_nat xt_multiport xt_mark xt_mac xt_lscan(O) xt_limit xt_length2(O) xt_length xt_ipv4options(O) xt_
+iprange xt_ipp2p(O) xt_iface(O) xt_hl xt_helper xt_hashlimit xt_geoip(O) xt_fuzzy(O) xt_esp xt_ecn xt_dscp xt_coova(O) xt_conntrack xt_connmark xt_connlimit xt_connlabel xt_connbytes xt_condition(O) xt_comment xt_clus
+ter xt_cgroup xt_bpf xt_asn(O) xt_addrtype xt_TRACE xt_TPROXY xt_TEE xt_TCPMSS xt_TARPIT(O) xt_SYSRQ(O) xt_RTPENGINE(O) xt_REDIRECT xt_PROTO(O) xt_NFQUEUE xt_NFLOG
+[155077.762715]  xt_NETMAP xt_MASQUERADE xt_LUA(O) xt_LOGMARK(O) xt_LOG xt_LED xt_IPMARK(O) xt_HL xt_FLOWOFFLOAD xt_DSCP xt_DHCPMAC(O) xt_DELUDE(O) xt_CT xt_CLASSIFY xt_CHECKSUM xt_CHAOS(O) xt_ACCOUNT(O) usbserial usb
+net ums_usbat ums_sddr55 ums_sddr09 ums_karma ums_jumpshot ums_isd200 ums_freecom ums_datafab ums_cypress ums_alauda ts_kmp ts_fsm ts_bm spidev slhc sfp sch_cake rtc_pcf8563 poly1305_neon nft_xfrm nft_tproxy nft_socke
+t nft_reject_ipv6 nft_reject_ipv4 nft_reject_inet nft_reject_bridge nft_reject nft_redir nft_quota nft_queue nft_numgen nft_nat nft_meta_bridge nft_masq nft_log nft_limit nft_hash nft_fwd_netdev nft_flow_offload nft_f
+ib_ipv6 nft_fib_ipv4 nft_fib nft_dup_netdev nft_dup_ipv6 nft_dup_ipv4 nft_ct nft_connlimit nft_compat nft_chain_nat nfnetlink_queue nfnetlink_log nfnetlink_cttimeout nfnetlink_cthelper nf_tproxy_ipv6 nf_tproxy_ipv4 nf
+_tables nf_socket_ipv6 nf_socket_ipv4 nf_reject_ipv4 nf_nat_tftp nf_nat_snmp_basic nf_nat_sip nf_nat_rtsp(O) nf_nat_pptp nf_nat_irc nf_nat_h323 nf_nat_ftp nf_log_syslog
+[155077.852472]  nf_flow_table_netlink nf_dup_netdev nf_dup_ipv6 nf_dup_ipv4 nf_conntrack_tftp nf_conntrack_snmp nf_conntrack_sip nf_conntrack_sane nf_conntrack_rtsp(O) nf_conntrack_pptp nf_conntrack_netlink nf_conntr
+ack_netbios_ns nf_conntrack_irc nf_conntrack_h323 nf_conntrack_ftp nf_conntrack_broadcast nf_conntrack_bridge nf_conncount netatop(O) mdio_i2c macvlan libcurve25519_generic libchacha iptable_raw iptable_nat iptable_ma
+ngle iptable_filter ipt_rpfilter ipt_ah ipt_ECN ip6table_raw ip6t_rpfilter ip_tables ina2xx ebtables ebt_vlan ebt_stp ebt_snat ebt_redirect ebt_pkttype ebt_nflog ebt_mark_m ebt_mark ebt_log ebt_limit ebt_ip6 ebt_ip eb
+t_dnat ebt_arpreply ebt_arp ebt_among ebt_802_3 compat_xtables(O) compat(O) cdc_wdm cdc_acm br_netfilter at24 arptable_filter arpt_mangle arp_tables crypto_safexcel fuse ntfs3 cls_bpf act_bpf act_connmark sch_tbf sch_
+ingress sch_htb sch_hfsc em_u32 cls_u32 cls_route cls_matchall cls_fw cls_flow cls_basic act_skbedit act_mirred act_gact sg pwm_fan i2c_gpio i2c_algo_bit gpio_pcf857x
+[155077.942662]  gpio_pca953x i2c_mux_pca954x i2c_mux_pca9541 i2c_mux_gpio i2c_mux ledtrig_usbport xt_set ip_set_list_set ip_set_hash_netportnet ip_set_hash_netport ip_set_hash_netnet ip_set_hash_netiface ip_set_hash_
+net ip_set_hash_mac ip_set_hash_ipportnet ip_set_hash_ipportip ip_set_hash_ipport ip_set_hash_ipmark ip_set_hash_ipmac ip_set_hash_ip ip_set_bitmap_port ip_set_bitmap_ipmac ip_set_bitmap_ip ip_set nfnetlink ip6table_n
+at nf_nat ip6t_NPT ip6t_rt ip6t_mh ip6t_ipv6header ip6t_hbh ip6t_frag ip6t_eui64 ip6t_ah ip6table_mangle ip6table_filter ip6_tables ip6t_REJECT x_tables nf_reject_ipv6 ksmbd nls_ucs2_utils cifs_arc4 asn1_decoder ip_gr
+e gre ifb l2tp_netlink l2tp_core oid_registry netlink_diag ip_tunnel veth tun snd_rawmidi snd_seq_device snd_pcm_oss snd_mixer_oss snd_hwdep snd_compress snd_pcm snd_timer snd soundcore ntfs autofs4 nls_utf8 nls_iso88
+59_1 nls_cp437 marvell10g marvell vxlan udp_tunnel ip6_udp_tunnel crypto_user algif_skcipher algif_rng algif_hash algif_aead af_alg sha512_arm64 sha1_ce cts arc4 uas
+[155078.032682]  usb_storage uleds leds_gpio xhci_plat_hcd xhci_pci xhci_mtk_hcd xhci_hcd nvme nvme_core gpio_button_hotplug(O) vfat fat exfat usbcore usb_common aeon_as21xxx(O) aquantia an8801 mii
+[155078.139777] CPU: 0 PID: 31795 Comm: runc:[1:CHILD] Tainted: G        W  O       6.6.93 #0
+[155078.148030] Hardware name: Bananapi BPI-R4-PRO-4E (DT)
+[155078.153242] pstate: 60400005 (nZCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[155078.160279] pc : register_net_sysctl_sz+0x1a4/0x1e8
+[155078.165234] lr : register_net_sysctl_sz+0x1a4/0x1e8
+[155078.170186] sp : ffffffc089e6bbd0
+[155078.173576] x29: ffffffc089e6bbd0 x28: ffffffc081351300 x27: ffffffc081516fe0
+[155078.180788] x26: ffffffc081516fa8 x25: ffffffc080e42dd8 x24: ffffff80e9c61d00
+[155078.187998] x23: ffffffc080e35890 x22: ffffff80d0009000 x21: 0000000000000020
+[155078.195209] x20: 0000000000000022 x19: ffffff80d0009800 x18: 0000000000000471
+[155078.202420] x17: 6e696f7020617461 x16: 64203a6b63656863 x15: ffffffc08136cd68
+[155078.209630] x14: 0000000000000d53 x13: 0000000000024471 x12: 00000000ffffffea
+[155078.216840] x11: 0000000100022471 x10: ffffffc0813c4d68 x9 : ffffffc08136cba0
+[155078.224052] x8 : 0000000000006a98 x7 : c000000100022471 x6 : 0000000000000001
+[155078.231261] x5 : 0000000000000000 x4 : 0000000000000000 x3 : 0000000000000000
+[155078.238472] x2 : ffffff80ff7486b0 x1 : ffffffc07e412000 x0 : 000000000000006c
+[155078.245683] Call trace:
+[155078.248205]  register_net_sysctl_sz+0x1a4/0x1e8
+[155078.252812]  nf_conntrack_pernet_init+0x16c/0x2e0
+[155078.257597]  ops_init+0x3c/0x13c
+[155078.260907]  setup_net+0x110/0x318
+[155078.264386]  copy_net_ns+0xc8/0x228
+[155078.267953]  create_new_namespaces+0x110/0x2ac
+[155078.272477]  unshare_nsproxy_namespaces+0x5c/0xa0
+[155078.277258]  ksys_unshare+0x110/0x31c
+[155078.280999]  __arm64_sys_unshare+0x10/0x1c
+[155078.285171]  invoke_syscall.constprop.0+0x4c/0xe0
+[155078.289954]  do_el0_svc+0x3c/0xbc
+[155078.293345]  el0_svc+0x18/0x4c
+[155078.296479]  el0t_64_sync_handler+0x118/0x124
+[155078.300912]  el0t_64_sync+0x150/0x154
+[155078.304651] ---[ end trace 0000000000000000 ]---
+```
+
+See https://forum.banana-pi.org/t/solved-hqos-for-bpi-r4-mt7988a/25982 and
+https://lists.openwrt.org/pipermail/openwrt-devel/2022-May/038659.html.
+
+Signed-off-by: Mohamed Bana <mohamed.omar.bana@gmail.com>
+---
+ include/net/netns/conntrack.h           | 2 ++
+ net/netfilter/nf_conntrack_standalone.c | 3 +++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/include/net/netns/conntrack.h b/include/net/netns/conntrack.h
+index 1f463b3957c7..3b7523abd63c 100644
+--- a/include/net/netns/conntrack.h
++++ b/include/net/netns/conntrack.h
+@@ -28,6 +28,7 @@ struct nf_tcp_net {
+ 	u8 tcp_be_liberal;
+ 	u8 tcp_max_retrans;
+ 	u8 tcp_ignore_invalid_rst;
++	u8 tcp_no_window_check;
+ #if IS_ENABLED(CONFIG_NF_FLOW_TABLE)
+ 	unsigned int offload_timeout;
+ #endif
+@@ -102,6 +103,7 @@ struct netns_ct {
+ 	u8			sysctl_acct;
+ 	u8			sysctl_tstamp;
+ 	u8			sysctl_checksum;
++	u8			sysctl_no_window_check;
+ 
+ 	struct ip_conntrack_stat __percpu *stat;
+ 	struct nf_ct_event_notifier __rcu *nf_conntrack_event_cb;
+diff --git a/net/netfilter/nf_conntrack_standalone.c b/net/netfilter/nf_conntrack_standalone.c
+index 1d5de1d9f008..95bec4b62b6f 100644
+--- a/net/netfilter/nf_conntrack_standalone.c
++++ b/net/netfilter/nf_conntrack_standalone.c
+@@ -989,6 +989,7 @@ static void nf_conntrack_standalone_init_tcp_sysctl(struct net *net,
+ 	XASSIGN(LIBERAL, &tn->tcp_be_liberal);
+ 	XASSIGN(MAX_RETRANS, &tn->tcp_max_retrans);
+ 	XASSIGN(IGNORE_INVALID_RST, &tn->tcp_ignore_invalid_rst);
++	XASSIGN(NO_WINDOW_CHECK, &tn->tcp_no_window_check);
+ #undef XASSIGN
+ 
+ #if IS_ENABLED(CONFIG_NF_FLOW_TABLE)
+@@ -1070,6 +1071,8 @@ static int nf_conntrack_standalone_init_sysctl(struct net *net)
+ 	table[NF_SYSCTL_CT_CHECKSUM].data = &net->ct.sysctl_checksum;
+ 	table[NF_SYSCTL_CT_LOG_INVALID].data = &net->ct.sysctl_log_invalid;
+ 	table[NF_SYSCTL_CT_ACCT].data = &net->ct.sysctl_acct;
++	table[NF_SYSCTL_CT_QOS].data = &net->ct.sysctl_qos;
++	table[NF_SYSCTL_CT_PROTO_TCP_NO_WINDOW_CHECK].data = &net->ct.sysctl_no_window_check;
+ #ifdef CONFIG_NF_CONNTRACK_EVENTS
+ 	table[NF_SYSCTL_CT_EVENTS].data = &net->ct.sysctl_events;
+ #endif
+-- 
+2.54.0
+

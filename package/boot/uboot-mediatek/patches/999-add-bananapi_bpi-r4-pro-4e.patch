@@ -687,14 +687,14 @@
 +ipaddr=192.168.1.1
 +serverip=192.168.1.2
 +loadaddr=0x50000000
-+bootargs=console=ttyS0,115200n1 pci=pcie_bus_perf root=/dev/fit0 rootwait
++bootargs=console=ttyS0,115200n1 pci=pcie_bus_perf root=/dev/fit0 rootwait ipv6.disable=1 nokaslr
 +bootcmd=if pstore check ; then run boot_recovery ; else run boot_emmc ; fi
 +bootconf=config-mt7988a-bananapi-bpi-r4-pro-4e
 +bootconf_base=config-mt7988a-bananapi-bpi-r4-pro-4e
 +bootconf_emmc=mt7988a-bananapi-bpi-r4-pro-4e-emmc
 +bootconf_sd=mt7988a-bananapi-bpi-r4-pro-4e-sd
-+bootconf_extra=mt7988a-bananapi-bpi-r4-pro-4e-iphy
-+bootdelay=0
++bootconf_extra=mt7988a-bananapi-bpi-r4-pro-4e-sfp
++bootdelay=8
 +bootfile=openwrt-mediatek-filogic-bananapi_bpi-r4-pro-4e-initramfs-recovery.itb
 +bootfile_bl2=openwrt-mediatek-filogic-bananapi_bpi-r4-pro-4e-emmc-preloader.bin
 +bootfile_fip=openwrt-mediatek-filogic-bananapi_bpi-r4-pro-4e-emmc-bl31-uboot.fip
@@ -703,7 +703,7 @@
 +bootled_rec=blue:status
 +bootmenu_confirm_return=askenv - Press ENTER to return to menu ; bootmenu 60
 +bootmenu_default=0
-+bootmenu_delay=0
++bootmenu_delay=8
 +bootmenu_title=      [0;34m( ( ( [1;39mOpenWrt[0;34m ) ) )  [0;36m[eMMC][0m
 +bootmenu_0=Initialize environment.=run _firstboot
 +bootmenu_0d=Run default boot command.=run boot_default
@@ -748,21 +748,21 @@
 +ipaddr=192.168.1.1
 +serverip=192.168.1.2
 +loadaddr=0x50000000
-+bootargs=console=ttyS0,115200n1 pci=pcie_bus_perf root=/dev/fit0 rootwait
++bootargs=console=ttyS0,115200n1 pci=pcie_bus_perf root=/dev/fit0 rootwait ipv6.disable=1 nokaslr
 +bootcmd=if pstore check ; then run boot_recovery ; else run boot_sdmmc ; fi
 +bootconf=config-mt7988a-bananapi-bpi-r4-pro-4e
 +bootconf_base=config-mt7988a-bananapi-bpi-r4-pro-4e
 +bootconf_emmc=mt7988a-bananapi-bpi-r4-pro-4e-emmc
 +bootconf_sd=mt7988a-bananapi-bpi-r4-pro-4e-sd
-+bootconf_extra=mt7988a-bananapi-bpi-r4-pro-4e-iphy
-+bootdelay=0
++bootconf_extra=mt7988a-bananapi-bpi-r4-pro-4e-sfp
++bootdelay=8
 +bootfile=openwrt-mediatek-filogic-bananapi_bpi-r4-pro-4e-initramfs-recovery.itb
 +bootfile_upg=openwrt-mediatek-filogic-bananapi_bpi-r4-pro-4e-squashfs-sysupgrade.itb
 +bootled_pwr=green:status
 +bootled_rec=blue:status
 +bootmenu_confirm_return=askenv - Press ENTER to return to menu ; bootmenu 60
 +bootmenu_default=0
-+bootmenu_delay=0
++bootmenu_delay=8
 +bootmenu_title=      [0;34m( ( ( [1;39mOpenWrt[0;34m ) ) )  [0;36m[SD card][0m
 +bootmenu_0=Initialize environment.=run _firstboot
 +bootmenu_0d=Run default boot command.=run boot_default
@@ -818,14 +818,14 @@
 +ipaddr=192.168.1.1
 +serverip=192.168.1.2
 +loadaddr=0x50000000
-+bootargs=console=ttyS0,115200n1 pci=pcie_bus_perf root=/dev/fit0 rootwait ubi.block=0,fit
++bootargs=console=ttyS0,115200n1 pci=pcie_bus_perf root=/dev/fit0 rootwait ubi.block=0,fit ipv6.disable=1 nokaslr
 +bootconf=config-mt7988a-bananapi-bpi-r4-pro-4e
 +bootconf_base=config-mt7988a-bananapi-bpi-r4-pro-4e
 +bootconf_emmc=mt7988a-bananapi-bpi-r4-pro-4e-emmc
 +bootconf_sd=mt7988a-bananapi-bpi-r4-pro-4e-sd
-+bootconf_extra=mt7988a-bananapi-bpi-r4-pro-4e-iphy
++bootconf_extra=mt7988a-bananapi-bpi-r4-pro-4e-sfp
 +bootcmd=if pstore check ; then run boot_recovery ; else run boot_ubi ; fi
-+bootdelay=0
++bootdelay=8
 +bootfile=openwrt-mediatek-filogic-bananapi_bpi-r4-pro-4e-initramfs-recovery.itb
 +bootfile_bl2=openwrt-mediatek-filogic-bananapi_bpi-r4-pro-4e-snand-preloader.bin
 +bootfile_fip=openwrt-mediatek-filogic-bananapi_bpi-r4-pro-4e-snand-bl31-uboot.fip
@@ -834,7 +834,7 @@
 +bootled_rec=blue:status
 +bootmenu_confirm_return=askenv - Press ENTER to return to menu ; bootmenu 60
 +bootmenu_default=0
-+bootmenu_delay=0
++bootmenu_delay=8
 +bootmenu_title=      [0;34m( ( ( [1;39mOpenWrt[0;34m ) ) )  [0;36m[SPI-NAND][0m
 +bootmenu_0=Initialize environment.=run _firstboot
 +bootmenu_0d=Run default boot command.=run boot_default

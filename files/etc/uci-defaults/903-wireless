@@ -1,0 +1,148 @@
+#!/bin/sh
+set -x
+exec >> /root/uci-defaults.log 2>&1
+
+# uci del wireless.radio0.noscan
+# uci del wireless.radio1.noscan
+# uci del wireless.radio2.noscan
+
+uci set wireless.radio0.country='GB'
+uci set wireless.radio1.country='GB'
+uci set wireless.radio2.country='GB'
+
+uci set wireless.default_radio0.ssid='12-Rochford-Close_E6-1QR_2G'
+uci set wireless.default_radio1.ssid='12-Rochford-Close_E6-1QR_5G'
+uci set wireless.default_radio2.ssid='12-Rochford-Close_E6-1QR_6G'
+uci set wireless.default_radio2.key='1234567890'
+
+uci set wireless.ap_mld_1.ssid='12-Rochford-Close_E6-1QR'
+uci set wireless.ap_mld_1.key='1234567890'
+
+# # Prevent these errors from spamming the logs:
+# # daemon.err hostapd: Management frame protection is required in 6 GHz
+# uci set wireless.default_radio0_mld.ieee80211w='2'
+# uci set wireless.default_radio0_mld.ocv='0'
+# uci set wireless.default_radio1_mld.ieee80211w='2'
+# uci set wireless.default_radio1_mld.ocv='0'
+
+uci commit wireless
+wifi reconf
+
+# tee /etc/config/wireless >/dev/null <<'EOF'
+# config wifi-device 'radio0'
+# 	option type 'mac80211'
+# 	option path 'soc/11300000.pcie/pci0000:00/0000:00:00.0/0000:01:00.0'
+# 	option radio '0'
+# 	option band '2g'
+# 	option channel '1'
+# 	option disabled '0'
+# 	option noscan '1'
+# 	option rnr '1'
+# 	option tx_burst '0.0'
+# 	option htmode 'EHT40'
+# 	option log_level '7'
+# 	option country 'NL'
+
+# config wifi-iface 'default_radio0_mld'
+# 	option device 'radio0'
+# 	option network 'lan'
+# 	option mode 'ap'
+# 	option mld_id '1'
+# 	option ieee80211w '1'
+# 	option encryption 'psk2'
+# 	option encryption_rsno 'sae'
+# 	option log_level '7'
+
+# config wifi-iface 'default_radio0'
+# 	option device 'radio0'
+# 	option network 'lan'
+# 	option mode 'ap'
+# 	option ssid '12-Rochford-Close_E6-1QR_2G'
+# 	option encryption 'none'
+# 	option mbo '0'
+# 	option log_level '7'
+
+# config wifi-device 'radio1'
+# 	option type 'mac80211'
+# 	option path 'soc/11300000.pcie/pci0000:00/0000:00:00.0/0000:01:00.0'
+# 	option radio '1'
+# 	option band '5g'
+# 	option channel '36'
+# 	option disabled '0'
+# 	option noscan '1'
+# 	option rnr '1'
+# 	option background_radar '1'
+# 	option tx_burst '0.0'
+# 	option htmode 'EHT160'
+# 	option log_level '7'
+# 	option country 'NL'
+# 	option cell_density '0'
+
+# config wifi-iface 'default_radio1_mld'
+# 	option device 'radio1'
+# 	option network 'lan'
+# 	option mode 'ap'
+# 	option mld_id '1'
+# 	option ieee80211w '1'
+# 	option encryption 'psk2'
+# 	option encryption_rsno 'sae'
+# 	option log_level '7'
+
+# config wifi-iface 'default_radio1'
+# 	option device 'radio1'
+# 	option network 'lan'
+# 	option mode 'ap'
+# 	option ssid '12-Rochford-Close_E6-1QR_5G'
+# 	option encryption 'none'
+# 	option mbo '0'
+# 	option log_level '7'
+
+# config wifi-device 'radio2'
+# 	option type 'mac80211'
+# 	option path 'soc/11300000.pcie/pci0000:00/0000:00:00.0/0000:01:00.0'
+# 	option radio '2'
+# 	option band '6g'
+# 	option channel '37'
+# 	option disabled '0'
+# 	option mbssid '1'
+# 	option tx_burst '0.0'
+# 	option htmode 'EHT320'
+# 	option log_level '7'
+# 	option country 'NL'
+# 	option cell_density '0'
+
+# config wifi-iface 'default_radio2_mld'
+# 	option device 'radio2'
+# 	option network 'lan'
+# 	option mode 'ap'
+# 	option mld_id '1'
+# 	option ieee80211w '2'
+# 	option encryption 'sae'
+# 	option log_level '7'
+# 	option ocv '0'
+
+# config wifi-iface 'default_radio2'
+# 	option device 'radio2'
+# 	option network 'lan'
+# 	option mode 'ap'
+# 	option ssid '12-Rochford-Close_E6-1QR_6G'
+# 	option encryption 'sae'
+# 	option mbo '1'
+# 	option key '1234567890'
+# 	option sae_pwe '2'
+# 	option ieee80211w '2'
+# 	option log_level '7'
+# 	option ocv '0'
+
+# config wifi-mld 'ap_mld_1'
+# 	option ifname 'ap-mld-1'
+# 	option mld_id '1'
+# 	option ssid '12-Rochford-Close_E6-1QR'
+# 	option encryption_rsno_2 'sae-ext'
+# 	option key '1234567890'
+# 	option sae_pwe '2'
+# 	option log_level '7'
+
+# EOF
+
+exit 0

@@ -1,0 +1,10 @@
+#!/bin/sh
+set -x
+exec >> /root/uci-defaults.log 2>&1
+
+# uci set system.@system[0].hostname='router'
+uci set system.@system[0].timezone='GMT0BST,M3.5.0/1,M10.5.0'
+uci set system.@system[0].zonename='Europe/London'
+uci commit system
+
+exit 0

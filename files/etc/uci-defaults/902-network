@@ -1,0 +1,13 @@
+#!/bin/sh
+set -x
+exec >> /root/uci-defaults.log 2>&1
+
+# uci set network.wan.device='br-wan'
+uci set network.wan.proto='static'
+uci set network.wan.ipaddr='178.255.93.241'
+uci set network.wan.netmask='255.255.255.254'
+uci set network.wan.gateway='178.255.93.240'
+uci set network.wan.dns='1.1.1.1 8.8.8.8 188.215.74.252'
+uci commit network
+
+exit 0

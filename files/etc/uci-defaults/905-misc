@@ -1,0 +1,39 @@
+#!/bin/sh
+set -x
+exec >> /root/uci-defaults.log 2>&1
+
+# uci set adblock-fast.config.enabled='1'
+# uci commit adblock-fast
+
+# uci set luci_statistics.collectd.FQDNLookup='1'
+# uci commit luci_statistics
+
+# Set Static Leases
+
+uci add dhcp host # =cfg05fe63
+uci set dhcp.@host[-1].name='asus-zenbook-14-sfp'
+uci set dhcp.@host[-1].ip='192.168.1.5'
+uci add_list dhcp.@host[-1].mac='C4:62:37:07:C3:43'
+uci commit dhcp
+
+uci add dhcp host # =cfg05fe63
+uci set dhcp.@host[-1].name='asus-zenbook-14-sabrent'
+uci set dhcp.@host[-1].ip='192.168.1.6'
+uci add_list dhcp.@host[-1].mac='00:E0:4C:F6:5C:1A'
+uci commit dhcp
+
+uci add dhcp host # =cfg07fe63
+uci set dhcp.@host[-1].name='asus-zenbook-14-wifi'
+uci set dhcp.@host[-1].ip='192.168.1.7'
+uci add_list dhcp.@host[-1].mac='C0:A8:10:F4:5D:3A'
+uci commit dhcp
+
+# Allocate IP addresses sequentially, starting from the lowest available address:
+# Should it be `dhcp.@dnsmasq[0].sequential_ip='1'`?
+uci set dhcp.cfg01411c.sequential_ip='1'
+uci commit dhcp
+
+# uci add_list vnstat.cfg015065.interface='br-wan'
+# uci commit vnstat
+
+exit 0
